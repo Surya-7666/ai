@@ -9,16 +9,6 @@ function DashboardClient({ ownerId }: { ownerId: string }) {
 
     const [theme, setTheme] = useState<'dark' | 'light'>('dark')
 
-    const [businessName, setBusinessName] = useState("")
-    const [supportEmail, setSupportEmail] = useState("")
-    const [knowledge, setKnowledge] = useState("")
-
-    const [loading, setLoading] = useState(false)
-    const [saved, setSaved] = useState(false)
-
-    // 🔥 NEW: validation error state
-    const [error, setError] = useState("")
-
     useEffect(() => {
         const savedTheme = localStorage.getItem('theme') as 'dark' | 'light' | null
         if (savedTheme) setTheme(savedTheme)
@@ -29,6 +19,54 @@ function DashboardClient({ ownerId }: { ownerId: string }) {
         setTheme(newTheme)
         localStorage.setItem('theme', newTheme)
     }
+
+    const themeStyles = theme === 'dark'
+        ? {
+            bg: 'bg-[#0f0f0f]',
+            text: 'text-[#f5f5f5]',
+            glass: 'bg-white/5 border border-white/10 backdrop-blur-xl',
+            sub: 'text-zinc-400'
+        }
+        : {
+            bg: 'bg-gradient-to-br from-white to-green-50',
+            text: 'text-zinc-900',
+            glass: 'bg-white/70 border border-green-200 backdrop-blur-xl',
+            sub: 'text-zinc-600'
+        }
+
+    const [businessName, setBusinessName] = useState("")
+    const [supportEmail, setSupportEmail] = useState("")
+    const [knowledge, setKnowledge] = useState("")
+    const [loading, setLoading] = useState(false)
+    const [saved, setSaved] = useState(false)
+
+    // 🔥 NEW STATES
+    const [error, setError] = useState("")
+    const [fieldErrors, setFieldErrors] = useState({
+        businessName: false,
+        supportEmail: false,
+        knowledge: false
+    })
+
+    // 🔥 EMAIL VALIDATION
+    const isValidEmail = (email: string) => {
+        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
+    }
+
+    // 🔥 LIVE VALIDATION
+    useEffect(() => {
+        setFieldErrors({
+            businessName: !businessName.trim(),
+            supportEmail: !supportEmail.trim() || !isValidEmail(supportEmail),
+            knowledge: !knowledge.trim()
+        })
+    }, [businessName, supportEmail, knowledge])
+
+    const isFormValid =
+        businessName.trim() &&
+        supportEmail.trim() &&
+        knowledge.trim() &&
+        isValidEmail(supportEmail)
 
     const handleSettings = async () => {
         setLoading(true)
@@ -43,15 +81,25 @@ function DashboardClient({ ownerId }: { ownerId: string }) {
         }
     }
 
-    // 🔥 NEW: VALIDATION BEFORE REDIRECT
-    const handleEmbedClick = () => {
-        if (!businessName.trim() || !supportEmail.trim() || !knowledge.trim()) {
-            setError("⚠️ Please fill all fields before proceeding to embed.")
+    // 🔥 UPDATED EMBED CLICK
+    const handleEmbedClick = async () => {
+        if (!isFormValid) {
+            setError("⚠️ Please fill all fields correctly before proceeding.")
             return
         }
 
         setError("")
-        navigate.push("/embed")
+        setLoading(true)
+
+        try {
+            // ✅ AUTO SAVE BEFORE REDIRECT
+            await axios.post("/api/settings", { ownerId, businessName, supportEmail, knowledge })
+            navigate.push("/embed")
+        } catch (err) {
+            console.log(err)
+        } finally {
+            setLoading(false)
+        }
     }
 
     useEffect(() => {
@@ -71,27 +119,25 @@ function DashboardClient({ ownerId }: { ownerId: string }) {
     }, [ownerId])
 
     return (
-        <div className={`min-h-screen transition-all duration-500`}>
+        <div className={`min-h-screen transition-all duration-500 ${themeStyles.bg} ${themeStyles.text}`}>
 
-            {/* NAVBAR */}
             <motion.div
                 initial={{ y: -60, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 className="fixed top-4 left-0 right-0 z-50"
             >
                 <div className="max-w-6xl mx-auto px-4">
-                    <div className="flex items-center justify-between px-6 py-3 rounded-2xl shadow-lg bg-white/10 backdrop-blur-xl">
+                    <div className={`flex items-center justify-between px-6 py-3 rounded-2xl shadow-lg ${themeStyles.glass}`}>
 
                         <h1
                             onClick={() => navigate.push("/")}
                             className='cursor-pointer text-3xl font-semibold tracking-wide'
                         >
-                            Nexora
+                            Nexo<span className='text-green-500'>ra</span>
                         </h1>
 
                         <div className='flex items-center gap-4'>
 
-                            {/* TOGGLE */}
                             <div
                                 onClick={toggleTheme}
                                 className="w-14 h-7 flex items-center bg-zinc-700 rounded-full p-1 cursor-pointer"
@@ -99,16 +145,18 @@ function DashboardClient({ ownerId }: { ownerId: string }) {
                                 <motion.div
                                     animate={{ x: theme === 'dark' ? 24 : 0 }}
                                     transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                                    className="w-5 h-5 bg-white rounded-full"
+                                    className="w-5 h-5 bg-white rounded-full shadow-md"
                                 />
                             </div>
 
-                            {/* 🔥 UPDATED BUTTON */}
+                            {/* 🔥 DISABLED BUTTON */}
                             <button
                                 onClick={handleEmbedClick}
-                                className='px-5 py-2 rounded-full bg-green-500 text-sm font-medium hover:opacity-90 transition'
+                                disabled={!isFormValid || loading}
+                                className={`px-5 py-2 rounded-full text-sm font-medium transition
+                                ${isFormValid ? "bg-green-500 hover:opacity-90" : "bg-gray-500 cursor-not-allowed"}`}
                             >
-                                Embed
+                                {loading ? "Processing..." : "Embed"}
                             </button>
 
                         </div>
@@ -116,15 +164,19 @@ function DashboardClient({ ownerId }: { ownerId: string }) {
                 </div>
             </motion.div>
 
-            {/* MAIN */}
             <div className='flex justify-center px-4 pt-32 pb-20'>
                 <motion.div
                     initial={{ opacity: 0, y: 30 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="w-full max-w-3xl p-10 rounded-2xl bg-white/10 backdrop-blur-xl"
+                    className={`w-full max-w-3xl p-10 rounded-2xl ${themeStyles.glass}`}
                 >
 
-                    <h1 className='text-2xl font-semibold mb-6'>Chatbot Configuration</h1>
+                    <div className='mb-10'>
+                        <h1 className='text-2xl font-semibold'>Chatbot Configuration</h1>
+                        <p className={`text-sm ${themeStyles.sub} mt-2`}>
+                            Define how your AI responds using your business data.
+                        </p>
+                    </div>
 
                     {/* 🔥 ERROR MESSAGE */}
                     {error && (
@@ -133,38 +185,59 @@ function DashboardClient({ ownerId }: { ownerId: string }) {
                         </div>
                     )}
 
-                    <div className='space-y-4'>
-                        <input
-                            type="text"
-                            placeholder='Business Name'
-                            value={businessName}
-                            onChange={(e) => setBusinessName(e.target.value)}
-                            className="w-full px-4 py-3 rounded-xl"
-                        />
+                    <div className='mb-10'>
+                        <h2 className='text-lg font-medium mb-4'>Business Details</h2>
+                        <div className='space-y-4'>
+                            <input
+                                type="text"
+                                placeholder='Business Name'
+                                value={businessName}
+                                onChange={(e) => setBusinessName(e.target.value)}
+                                className={`w-full px-4 py-3 rounded-xl text-sm outline-none ${themeStyles.glass}
+                                ${fieldErrors.businessName ? "border-red-500" : ""}`}
+                            />
+                            <input
+                                type="text"
+                                placeholder='Support Email'
+                                value={supportEmail}
+                                onChange={(e) => setSupportEmail(e.target.value)}
+                                className={`w-full px-4 py-3 rounded-xl text-sm outline-none ${themeStyles.glass}
+                                ${fieldErrors.supportEmail ? "border-red-500" : ""}`}
+                            />
+                        </div>
+                    </div>
 
-                        <input
-                            type="text"
-                            placeholder='Support Email'
-                            value={supportEmail}
-                            onChange={(e) => setSupportEmail(e.target.value)}
-                            className="w-full px-4 py-3 rounded-xl"
-                        />
+                    <div className='mb-10'>
+                        <h2 className='text-lg font-medium mb-4'>Knowledge Base</h2>
 
                         <textarea
                             value={knowledge}
                             onChange={(e) => setKnowledge(e.target.value)}
-                            className="w-full h-40 px-4 py-3 rounded-xl"
-                            placeholder='Knowledge base...'
+                            className={`w-full h-52 px-4 py-3 rounded-xl text-sm outline-none ${themeStyles.glass}
+                            ${fieldErrors.knowledge ? "border-red-500" : ""}`}
                         />
                     </div>
 
-                    <div className='mt-6 flex gap-4'>
-                        <button
+                    <div className='flex items-center gap-5'>
+                        <motion.button
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
                             onClick={handleSettings}
-                            className='px-6 py-3 rounded-xl bg-green-500 text-white'
+                            disabled={loading}
+                            className='px-7 py-3 rounded-xl bg-green-500 text-white text-sm font-medium hover:opacity-90 transition'
                         >
-                            Save
-                        </button>
+                            {loading ? "Saving..." : "Save Changes"}
+                        </motion.button>
+
+                        {saved && (
+                            <motion.span
+                                initial={{ opacity: 0, y: 6 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                className='text-sm text-green-400'
+                            >
+                                ✓ Saved successfully
+                            </motion.span>
+                        )}
                     </div>
 
                 </motion.div>
