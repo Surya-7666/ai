@@ -82,16 +82,6 @@ GEMINI_API_KEY=your_gemini_api_key
 
 ---
 
-## 🔌 Embed Script
-
-Add this script to your website:
-
-```html
-<script src="http://localhost:3000/widget.js" data-owner-id="YOUR_ID"></script>
-```
-
----
-
 ## 📂 Project Structure
 
 ```
