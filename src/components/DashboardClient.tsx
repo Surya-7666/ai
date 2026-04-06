@@ -138,6 +138,7 @@ function DashboardClient({ ownerId }: { ownerId: string }) {
                             <input
                                 type="text"
                                 placeholder='Business Name'
+                                required
                                 value={businessName}
                                 onChange={(e) => setBusinessName(e.target.value)}
                                 className={`w-full px-4 py-3 rounded-xl text-sm outline-none ${themeStyles.glass}`}
@@ -145,6 +146,7 @@ function DashboardClient({ ownerId }: { ownerId: string }) {
                             <input
                                 type="text"
                                 placeholder='Support Email'
+                                required
                                 value={supportEmail}
                                 onChange={(e) => setSupportEmail(e.target.value)}
                                 className={`w-full px-4 py-3 rounded-xl text-sm outline-none ${themeStyles.glass}`}
@@ -162,6 +164,7 @@ function DashboardClient({ ownerId }: { ownerId: string }) {
                         <textarea
                             value={knowledge}
                             onChange={(e) => setKnowledge(e.target.value)}
+                            required
                             className={`w-full h-52 px-4 py-3 rounded-xl text-sm outline-none ${themeStyles.glass}`}
                             placeholder={`Example:\n• Refund: 7 days\n• Delivery: 3-5 days\n• COD available`}
                         />
