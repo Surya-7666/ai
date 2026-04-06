@@ -21,7 +21,7 @@ Built with modern UI, smooth UX, and real-time AI responses powered by your own 
 
 ## 🖥️ Screenshots
 
-> 📁 Place images inside `/screenshots` folder
+
 
 ### 🔹 Dashboard
 
