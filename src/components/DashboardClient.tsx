@@ -20,6 +20,7 @@ function DashboardClient({ ownerId }: { ownerId: string }) {
         localStorage.setItem('theme', newTheme)
     }
 
+    // ✅ MATCH YOUR FINAL THEME
     const themeStyles = theme === 'dark'
         ? {
             bg: 'bg-[#0f0f0f]',
@@ -40,34 +41,6 @@ function DashboardClient({ ownerId }: { ownerId: string }) {
     const [loading, setLoading] = useState(false)
     const [saved, setSaved] = useState(false)
 
-    // 🔥 NEW STATES
-    const [error, setError] = useState("")
-    const [fieldErrors, setFieldErrors] = useState({
-        businessName: false,
-        supportEmail: false,
-        knowledge: false
-    })
-
-    // 🔥 EMAIL VALIDATION
-    const isValidEmail = (email: string) => {
-        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
-    }
-
-    // 🔥 LIVE VALIDATION
-    useEffect(() => {
-        setFieldErrors({
-            businessName: !businessName.trim(),
-            supportEmail: !supportEmail.trim() || !isValidEmail(supportEmail),
-            knowledge: !knowledge.trim()
-        })
-    }, [businessName, supportEmail, knowledge])
-
-    const isFormValid =
-        businessName.trim() &&
-        supportEmail.trim() &&
-        knowledge.trim() &&
-        isValidEmail(supportEmail)
-
     const handleSettings = async () => {
         setLoading(true)
         try {
@@ -77,27 +50,6 @@ function DashboardClient({ ownerId }: { ownerId: string }) {
             setTimeout(() => setSaved(false), 3000)
         } catch (error) {
             console.log(error)
-            setLoading(false)
-        }
-    }
-
-    // 🔥 UPDATED EMBED CLICK
-    const handleEmbedClick = async () => {
-        if (!isFormValid) {
-            setError("⚠️ Please fill all fields correctly before proceeding.")
-            return
-        }
-
-        setError("")
-        setLoading(true)
-
-        try {
-            // ✅ AUTO SAVE BEFORE REDIRECT
-            await axios.post("/api/settings", { ownerId, businessName, supportEmail, knowledge })
-            navigate.push("/embed")
-        } catch (err) {
-            console.log(err)
-        } finally {
             setLoading(false)
         }
     }
@@ -121,6 +73,7 @@ function DashboardClient({ ownerId }: { ownerId: string }) {
     return (
         <div className={`min-h-screen transition-all duration-500 ${themeStyles.bg} ${themeStyles.text}`}>
 
+            {/* 🔥 MATCHED NAVBAR */}
             <motion.div
                 initial={{ y: -60, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
@@ -138,6 +91,7 @@ function DashboardClient({ ownerId }: { ownerId: string }) {
 
                         <div className='flex items-center gap-4'>
 
+                            {/* TOGGLE */}
                             <div
                                 onClick={toggleTheme}
                                 className="w-14 h-7 flex items-center bg-zinc-700 rounded-full p-1 cursor-pointer"
@@ -149,14 +103,11 @@ function DashboardClient({ ownerId }: { ownerId: string }) {
                                 />
                             </div>
 
-                            {/* 🔥 DISABLED BUTTON */}
                             <button
-                                onClick={handleEmbedClick}
-                                disabled={!isFormValid || loading}
-                                className={`px-5 py-2 rounded-full text-sm font-medium transition
-                                ${isFormValid ? "bg-green-500 hover:opacity-90" : "bg-gray-500 cursor-not-allowed"}`}
+                                onClick={() => navigate.push("/embed")}
+                                className='px-5 py-2 rounded-full bg-green-500 text-sm font-medium hover:opacity-90 transition'
                             >
-                                {loading ? "Processing..." : "Embed"}
+                                Embed
                             </button>
 
                         </div>
@@ -164,6 +115,7 @@ function DashboardClient({ ownerId }: { ownerId: string }) {
                 </div>
             </motion.div>
 
+            {/* MAIN */}
             <div className='flex justify-center px-4 pt-32 pb-20'>
                 <motion.div
                     initial={{ opacity: 0, y: 30 }}
@@ -171,6 +123,7 @@ function DashboardClient({ ownerId }: { ownerId: string }) {
                     className={`w-full max-w-3xl p-10 rounded-2xl ${themeStyles.glass}`}
                 >
 
+                    {/* HEADER */}
                     <div className='mb-10'>
                         <h1 className='text-2xl font-semibold'>Chatbot Configuration</h1>
                         <p className={`text-sm ${themeStyles.sub} mt-2`}>
@@ -178,13 +131,7 @@ function DashboardClient({ ownerId }: { ownerId: string }) {
                         </p>
                     </div>
 
-                    {/* 🔥 ERROR MESSAGE */}
-                    {error && (
-                        <div className="mb-6 text-sm text-red-400 bg-red-500/10 px-4 py-2 rounded-lg">
-                            {error}
-                        </div>
-                    )}
-
+                    {/* BUSINESS */}
                     <div className='mb-10'>
                         <h2 className='text-lg font-medium mb-4'>Business Details</h2>
                         <div className='space-y-4'>
@@ -193,31 +140,34 @@ function DashboardClient({ ownerId }: { ownerId: string }) {
                                 placeholder='Business Name'
                                 value={businessName}
                                 onChange={(e) => setBusinessName(e.target.value)}
-                                className={`w-full px-4 py-3 rounded-xl text-sm outline-none ${themeStyles.glass}
-                                ${fieldErrors.businessName ? "border-red-500" : ""}`}
+                                className={`w-full px-4 py-3 rounded-xl text-sm outline-none ${themeStyles.glass}`}
                             />
                             <input
                                 type="text"
                                 placeholder='Support Email'
                                 value={supportEmail}
                                 onChange={(e) => setSupportEmail(e.target.value)}
-                                className={`w-full px-4 py-3 rounded-xl text-sm outline-none ${themeStyles.glass}
-                                ${fieldErrors.supportEmail ? "border-red-500" : ""}`}
+                                className={`w-full px-4 py-3 rounded-xl text-sm outline-none ${themeStyles.glass}`}
                             />
                         </div>
                     </div>
 
+                    {/* KNOWLEDGE */}
                     <div className='mb-10'>
                         <h2 className='text-lg font-medium mb-4'>Knowledge Base</h2>
+                        <p className={`text-sm ${themeStyles.sub} mb-4`}>
+                            Add FAQs, delivery info, refund policy, and support details.
+                        </p>
 
                         <textarea
                             value={knowledge}
                             onChange={(e) => setKnowledge(e.target.value)}
-                            className={`w-full h-52 px-4 py-3 rounded-xl text-sm outline-none ${themeStyles.glass}
-                            ${fieldErrors.knowledge ? "border-red-500" : ""}`}
+                            className={`w-full h-52 px-4 py-3 rounded-xl text-sm outline-none ${themeStyles.glass}`}
+                            placeholder={`Example:\n• Refund: 7 days\n• Delivery: 3-5 days\n• COD available`}
                         />
                     </div>
 
+                    {/* ACTION */}
                     <div className='flex items-center gap-5'>
                         <motion.button
                             whileHover={{ scale: 1.05 }}
