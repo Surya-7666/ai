@@ -139,25 +139,7 @@ If you like this project, give it a star ⭐
 
 ---
 
-## 📸 Adding Screenshots (Quick Guide)
 
-1. Create a folder:
-
-```
-screenshots
-```
-
-2. Add images:
-
-```
-dashboard.png
-chatbot.png
-embed.png
-```
-
-3. Done — GitHub will automatically display them.
-
----
 
 ## 🚨 Security Note
 
