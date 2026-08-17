@@ -1,230 +1,314 @@
-(function () {
-
-  const api_Url = "https://ai-ten-nu-93.vercel.app/api/chat"
+(async function () {
+  // for run locally change url:https://ai-ten-nu-93.vercel.app into https://localhost:300
+  const apiUrl = "https://ai-ten-nu-93.vercel.app/api/chat";
+  const configApiUrl = "https://ai-ten-nu-93.vercel.app/api/chatbot-config";
 
   const scriptTag = document.currentScript;
-  const ownerId = scriptTag.getAttribute("data-owner-id")
+  const ownerId = scriptTag.getAttribute("data-owner-id");
 
   if (!ownerId) {
-    console.log("owner id not found")
-    return
+    console.log("Owner ID not found");
+    return;
   }
 
-  // 🔥 FLOATING BUTTON (GRADIENT ORB)
-  const button = document.createElement("div")
-  button.innerHTML = "🤖"
+  try {
+    // Get chatbot settings
+    const configResponse = await fetch(`${configApiUrl}?ownerId=${ownerId}`);
 
-  Object.assign(button.style, {
-    position: "fixed",
-    bottom: "28px",
-    right: "28px",
-    width: "60px",
-    height: "60px",
-    borderRadius: "50%",
-    background: "linear-gradient(135deg, #6366f1, #8b5cf6)",
-    color: "#fff",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    cursor: "pointer",
-    fontSize: "24px",
-    boxShadow: "0 10px 30px rgba(99,102,241,0.5)",
-    transition: "all 0.3s ease",
-    zIndex: "999999",
-  })
+    const config = await configResponse.json();
 
-  button.onmouseenter = () => button.style.transform = "scale(1.1)"
-  button.onmouseleave = () => button.style.transform = "scale(1)"
+    console.log("Chatbot Config:", config);
+    const chatBubbleColor = config.chatBubbleColor || "#6366f1";
 
-  document.body.appendChild(button)
+    const widgetPosition = config.widgetPosition || "right";
 
-  // 🔥 CHAT BOX (GLASS UI)
-  const box = document.createElement("div")
+    const borderRadius = config.borderRadius || 18;
 
-  Object.assign(box.style, {
-    position: "fixed",
-    bottom: "100px",
-    right: "28px",
-    width: "340px",
-    height: "460px",
-    borderRadius: "18px",
-    background: "rgba(255,255,255,0.7)",
-    backdropFilter: "blur(20px)",
-    boxShadow: "0 30px 80px rgba(0,0,0,0.25)",
-    display: "none",
-    flexDirection: "column",
-    overflow: "hidden",
-    zIndex: "999999",
-    fontFamily: "Inter, sans-serif",
-    border: "1px solid rgba(255,255,255,0.3)",
-    transition: "all 0.3s ease"
-  })
+    // =====================
+    // FLOATING BUTTON
+    // =====================
 
-  box.innerHTML = `
+    const button = document.createElement("div");
 
-  <!-- HEADER -->
-  <div style="
-    padding:14px;
-    font-size:14px;
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    background:linear-gradient(135deg,#6366f1,#8b5cf6);
-    color:#fff;
-  ">
-    <span>Support</span>
-    <span id="chat-close" style="cursor:pointer;font-size:16px">✕</span>
-  </div>
-
-  <!-- MESSAGES -->
-  <div id="chat-messages" style="
-    flex:1;
-    padding:14px;
-    overflow-y:auto;
-    display:flex;
-    flex-direction:column;
-    gap:6px;
-  "></div>
-
-  <!-- INPUT -->
-  <div style="
-    padding:10px;
-    display:flex;
-    gap:8px;
-    background:rgba(255,255,255,0.6);
-    backdrop-filter:blur(10px);
-  ">
-    <input id="chat-input" type="text"
+    if (config.botIcon) {
+      button.innerHTML = `
+    <img 
+      src="${config.botIcon}" 
       style="
-        flex:1;
-        padding:10px 14px;
-        border:none;
-        border-radius:999px;
-        font-size:13px;
-        outline:none;
-        background:#fff;
-        box-shadow:0 5px 15px rgba(0,0,0,0.1);
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: inherit;
       "
-      placeholder="Ask anything..." />
+    />
+  `;
+    } else {
+      button.innerHTML = "🤖";
+    }
+    Object.assign(button.style, {
+      position: "fixed",
+      bottom: "28px",
 
-    <button id="chat-send"
-      style="
-        padding:10px 16px;
-        border:none;
-        background:linear-gradient(135deg,#6366f1,#8b5cf6);
+      width: "60px",
+      height: "60px",
+
+      borderRadius: `${borderRadius}px`,
+
+      background: chatBubbleColor,
+
+      color: "#fff",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+
+      cursor: "pointer",
+      fontSize: "24px",
+
+      boxShadow: "0 10px 30px rgba(0,0,0,0.25)",
+
+      transition: "all 0.3s ease",
+
+      zIndex: "999999",
+    });
+
+    // =====================
+    // LEFT / RIGHT POSITION
+    // =====================
+
+    if (widgetPosition === "left") {
+      button.style.left = "28px";
+    } else {
+      button.style.right = "28px";
+    }
+
+    button.onmouseenter = () => {
+      button.style.transform = "scale(1.1)";
+    };
+
+    button.onmouseleave = () => {
+      button.style.transform = "scale(1)";
+    };
+
+    document.body.appendChild(button);
+
+    // =====================
+    // CHAT BOX
+    // =====================
+
+    const box = document.createElement("div");
+
+    Object.assign(box.style, {
+      position: "fixed",
+
+      bottom: "100px",
+
+      width: "340px",
+      height: "460px",
+
+      borderRadius: `${borderRadius}px`,
+
+      background: "#ffffff",
+
+      boxShadow: "0 30px 80px rgba(0,0,0,0.25)",
+
+      display: "none",
+
+      flexDirection: "column",
+
+      overflow: "hidden",
+
+      zIndex: "999999",
+
+      fontFamily: "Inter, sans-serif",
+    });
+
+    // CHAT BOX POSITION
+    if (widgetPosition === "left") {
+      box.style.left = "28px";
+    } else {
+      box.style.right = "28px";
+    }
+
+    box.innerHTML = `
+
+      <div style="
+        padding:14px;
+        font-size:14px;
+        display:flex;
+        justify-content:space-between;
+        align-items:center;
+        background:${chatBubbleColor};
         color:#fff;
-        border-radius:999px;
-        cursor:pointer;
       ">
-      ➤
-    </button>
-  </div>
-  `
+        <span>Support</span>
 
-  document.body.appendChild(box)
+        <span
+          id="chat-close"
+          style="cursor:pointer;font-size:16px"
+        >
+          ✕
+        </span>
 
-  // 🔥 TOGGLE
-  button.onclick = () => {
-    box.style.display = box.style.display === "none" ? "flex" : "none"
-    box.style.transform = "translateY(0)"
-  }
+      </div>
 
-  document.addEventListener("click", (e) => {
-    if (!box.contains(e.target) && !button.contains(e.target)) {
-      box.style.display = "none"
+
+      <div
+        id="chat-messages"
+        style="
+          flex:1;
+          padding:14px;
+          overflow-y:auto;
+          display:flex;
+          flex-direction:column;
+          gap:6px;
+        "
+      ></div>
+
+
+      <div style="
+        padding:10px;
+        display:flex;
+        gap:8px;
+      ">
+
+        <input
+          id="chat-input"
+          type="text"
+
+          style="
+            flex:1;
+            padding:10px 14px;
+            border:1px solid #ddd;
+            border-radius:999px;
+            font-size:13px;
+            outline:none;
+          "
+
+          placeholder="Ask anything..."
+        />
+
+
+        <button
+          id="chat-send"
+
+          style="
+            padding:10px 16px;
+            border:none;
+            background:${chatBubbleColor};
+            color:#fff;
+            border-radius:999px;
+            cursor:pointer;
+          "
+        >
+          ➤
+        </button>
+
+      </div>
+    `;
+
+    document.body.appendChild(box);
+
+    // =====================
+    // TOGGLE CHAT
+    // =====================
+
+    button.onclick = () => {
+      box.style.display = box.style.display === "none" ? "flex" : "none";
+    };
+
+    document.addEventListener("click", (e) => {
+      if (!box.contains(e.target) && !button.contains(e.target)) {
+        box.style.display = "none";
+      }
+    });
+
+    document.querySelector("#chat-close").onclick = () => {
+      box.style.display = "none";
+    };
+
+    const input = document.querySelector("#chat-input");
+
+    const sendBtn = document.querySelector("#chat-send");
+
+    const messageArea = document.querySelector("#chat-messages");
+
+    // =====================
+    // ADD MESSAGE
+    // =====================
+
+    function addMessage(text, from) {
+      const bubble = document.createElement("div");
+
+      bubble.textContent = text;
+
+      Object.assign(bubble.style, {
+        maxWidth: "75%",
+
+        padding: "10px 14px",
+
+        borderRadius: `${borderRadius}px`,
+
+        fontSize: "13px",
+
+        marginBottom: "6px",
+
+        alignSelf: from === "user" ? "flex-end" : "flex-start",
+
+        background: from === "user" ? chatBubbleColor : "#f3f4f6",
+
+        color: from === "user" ? "#fff" : "#111",
+
+        boxShadow: "0 5px 15px rgba(0,0,0,0.08)",
+      });
+
+      messageArea.appendChild(bubble);
+
+      messageArea.scrollTop = messageArea.scrollHeight;
     }
-  })
 
-  document.querySelector("#chat-close").onclick = () => {
-    box.style.display = "none"
-  }
+    // =====================
+    // SEND MESSAGE
+    // =====================
 
-  const input = document.querySelector("#chat-input")
-  const sendBtn = document.querySelector("#chat-send")
-  const messageArea = document.querySelector("#chat-messages")
+    sendBtn.onclick = sendMessage;
 
-  // 🔥 ADD MESSAGE
-  function addMessage(text, from) {
-    const bubble = document.createElement("div")
-    bubble.innerHTML = text
+    input.addEventListener("keypress", (e) => {
+      if (e.key === "Enter") {
+        sendMessage();
+      }
+    });
 
-    Object.assign(bubble.style, {
-      maxWidth: "75%",
-      padding: "10px 14px",
-      borderRadius: "16px",
-      fontSize: "13px",
-      marginBottom: "6px",
-      alignSelf: from === "user" ? "flex-end" : "flex-start",
-      background: from === "user"
-        ? "linear-gradient(135deg,#6366f1,#8b5cf6)"
-        : "rgba(255,255,255,0.85)",
-      color: from === "user" ? "#fff" : "#111",
-      boxShadow: "0 5px 15px rgba(0,0,0,0.1)"
-    })
+    async function sendMessage() {
+      const text = input.value.trim();
 
-    messageArea.appendChild(bubble)
-    messageArea.scrollTop = messageArea.scrollHeight
-  }
+      if (!text) return;
 
-  // 🔥 TYPING ANIMATION
-  function showTyping() {
-    const typing = document.createElement("div")
-    typing.id = "typing"
+      addMessage(text, "user");
 
-    typing.innerHTML = "•••"
+      input.value = "";
 
-    Object.assign(typing.style, {
-      fontSize: "20px",
-      color: "#6b7280",
-      marginBottom: "8px",
-      alignSelf: "flex-start",
-      letterSpacing: "3px",
-      animation: "blink 1s infinite"
-    })
+      try {
+        const response = await fetch(apiUrl, {
+          method: "POST",
 
-    messageArea.appendChild(typing)
-    messageArea.scrollTop = messageArea.scrollHeight
-  }
+          headers: {
+            "Content-Type": "application/json",
+          },
 
-  function removeTyping() {
-    const typing = document.getElementById("typing")
-    if (typing) typing.remove()
-  }
+          body: JSON.stringify({
+            ownerId,
+            message: text,
+          }),
+        });
 
-  // 🔥 SEND MESSAGE
-  sendBtn.onclick = sendMessage
-  input.addEventListener("keypress", (e) => {
-    if (e.key === "Enter") sendMessage()
-  })
+        const data = await response.json();
 
-  async function sendMessage() {
-    const text = input.value.trim()
-    if (!text) return
-
-    addMessage(text, "user")
-    input.value = ""
-
-    showTyping()
-
-    try {
-      const response = await fetch(api_Url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ownerId,
-          message: text
-        })
-      })
-
-      const data = await response.json()
-
-      removeTyping()
-      addMessage(data || "Something went wrong", "ai")
-
-    } catch (error) {
-      removeTyping()
-      addMessage("Server error. Try again.", "ai")
+        addMessage(data || "Something went wrong", "ai");
+      } catch (error) {
+        addMessage("Server error. Try again.", "ai");
+      }
     }
+  } catch (error) {
+    console.error("Chatbot initialization error:", error);
   }
-
-})()
+})();

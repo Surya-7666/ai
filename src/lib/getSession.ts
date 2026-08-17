@@ -15,6 +15,4 @@ export async function getSession() {
         console.log(error)
     }
 
-
-
 }
