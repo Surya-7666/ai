@@ -1,5 +1,5 @@
 (async function () {
-  // for run locally change url:https://ai-ten-nu-93.vercel.app into https://localhost:300
+  //For running locally, change the URL:https://ai-ten-nu-93.vercel.app into https://localhost:3000
   const apiUrl = "https://ai-ten-nu-93.vercel.app/api/chat";
   const configApiUrl = "https://ai-ten-nu-93.vercel.app/api/chatbot-config";
 
