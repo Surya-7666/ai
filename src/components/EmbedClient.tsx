@@ -37,10 +37,7 @@ function EmbedClient({ ownerId }: { ownerId: string }) {
 
   const [copied, setCopied] = useState(false);
 
-  const AppUrl = "http://localhost:3000"; // test
-
-  // const embedCode = `<script src="${process.env.NEXT_PUBLIC_APP_URL}/chatBot.js" data-owner-id="${ownerId}"></script>`
-  const embedCode = `<script src="${AppUrl}/chatBot.js" data-owner-id="${ownerId}"></script>`;
+  const embedCode = `<script src="${process.env.NEXT_PUBLIC_APP_URL}/chatBot.js" data-owner-id="${ownerId}"></script>`
 
   const copyCode = () => {
     navigator.clipboard.writeText(embedCode);
