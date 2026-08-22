@@ -1,34 +1,46 @@
-import mongoose from "mongoose"
+import mongoose from "mongoose";
+import dns from "dns";
 
-const mongo_Url = process.env.MONGODB_URI
+console.log("DNS before:", dns.getServers());
+dns.setServers(["8.8.8.8", "1.1.1.1"]);
+console.log("DNS after:", dns.getServers());
+const mongoUrl = process.env.MONGODB_URI;
 
-if (!mongo_Url) {
-  throw new Error("Please define MONGODB_URI in .env.local")
+if (!mongoUrl) {
+  throw new Error("MongoDB URI is missing");
 }
 
-let cache = (global as any).mongoose
+let cache = (global as any).mongoose;
 
 if (!cache) {
-  cache = (global as any).mongoose = { conn: null, promise: null }
+  cache = (global as any).mongoose = {
+    conn: null,
+    promise: null,
+  };
 }
 
 const connectDb = async () => {
-
   if (cache.conn) {
-    return cache.conn
+    console.log("Using existing MongoDB connection");
+    return cache.conn;
   }
 
   if (!cache.promise) {
-    cache.promise = mongoose.connect(mongo_Url).then((m) => m.connection)
+    // console.log("Mongo URL:", mongoUrl);
+    cache.promise = mongoose.connect(mongoUrl).then((m) => {
+      console.log("MongoDB Connected Successfully ✅");
+      return m.connection;
+    });
   }
 
   try {
-    cache.conn = await cache.promise
+    cache.conn = await cache.promise;
+    return cache.conn;
   } catch (error) {
-    console.log("MongoDB connection error:", error)
+    cache.promise = null;
+    console.error("MongoDB connection error:", error);
+    throw error;
   }
+};
 
-  return cache.conn
-}
-
-export default connectDb
+export default connectDb;
