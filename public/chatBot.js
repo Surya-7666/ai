@@ -69,7 +69,7 @@
       transition: "all 0.3s ease",
 
       zIndex: "999999",
-      boxSizing: "border-box";
+      boxSizing: "border-box",
     });
 
     // =====================
