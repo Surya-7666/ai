@@ -25,7 +25,7 @@ Built with modern UI, smooth UX, and real-time AI responses powered by your own 
 
 ### 🔹 Dashboard
 
-![Dashboard](./public/dashboard.jpeg)
+![Dashboard](public/new_dashboard.png)
 
 ### 🔹 Chatbot UI
 
