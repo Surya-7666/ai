@@ -69,6 +69,7 @@
       transition: "all 0.3s ease",
 
       zIndex: "999999",
+      boxSizing: "border-box";
     });
 
     // =====================
@@ -155,14 +156,15 @@
       <div
         id="chat-messages"
         style="
-          flex:1;
+          flex:1 1 0;
           min-height:0;
-          overflow-x:0;
+          overflow-x:hidden;
           padding:14px;
           overflow-y:auto;
           display:flex;
           flex-direction:column;
           gap:6px;
+          box-sizing: border-box;
         "
       ></div>
 
