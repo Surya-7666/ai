@@ -156,6 +156,8 @@
         id="chat-messages"
         style="
           flex:1;
+          min-height:0;
+          overflow-x:0;
           padding:14px;
           overflow-y:auto;
           display:flex;
@@ -259,6 +261,11 @@
         color: from === "user" ? "#fff" : "#111",
 
         boxShadow: "0 5px 15px rgba(0,0,0,0.08)",
+
+        //new update
+        wordBreak: "break-word",
+  overflowWrap: "break-word",
+  flexShrink: "0",
       });
 
       messageArea.appendChild(bubble);
